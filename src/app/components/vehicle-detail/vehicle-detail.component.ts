@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, ChangeDetectionStrategy, OnInit, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -36,6 +36,7 @@ export class VehicleDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly vehicleService = inject(VehicleService);
   private readonly financeService = inject(FinanceCalculatorService);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Signals for state management
   protected readonly vehicle = signal<Vehicle | null>(null);
@@ -58,7 +59,7 @@ export class VehicleDetailComponent implements OnInit {
           }
           return this.vehicleService.getVehicleById(vehicleId);
         }),
-        takeUntilDestroyed()
+        takeUntilDestroyed(this.destroyRef)
       )
       .subscribe({
         next: (vehicle) => {
@@ -94,7 +95,7 @@ export class VehicleDetailComponent implements OnInit {
       terms.termInMonths,
       terms.deposit
     )
-    .pipe(takeUntilDestroyed())
+    .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
       next: (quote) => {
         this.financeQuote.set(quote);

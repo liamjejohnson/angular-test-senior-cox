@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, input, output, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, input, output, ChangeDetectionStrategy, OnInit, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -36,6 +36,7 @@ export interface FinanceTerms {
 })
 export class FinanceCalculatorComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Inputs
   readonly vehicle = input.required<Vehicle>();
@@ -94,7 +95,7 @@ export class FinanceCalculatorComponent implements OnInit {
 
     // Subscribe to form changes with proper cleanup
     this.financeForm.valueChanges
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         if (this.financeForm.valid) {
           this.emitTerms();

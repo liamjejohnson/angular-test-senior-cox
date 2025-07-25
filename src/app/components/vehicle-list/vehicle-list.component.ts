@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, ChangeDetectionStrategy, OnInit, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -35,6 +35,7 @@ import { Vehicle } from '../../models';
 export class VehicleListComponent implements OnInit {
   private readonly vehicleService = inject(VehicleService);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
 
   // Signals for state management
   protected readonly vehicles = signal<Vehicle[]>([]);
@@ -95,7 +96,7 @@ export class VehicleListComponent implements OnInit {
     this.error.set(null);
     
     this.vehicleService.getVehicles()
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (vehicles) => {
           this.vehicles.set(vehicles);
