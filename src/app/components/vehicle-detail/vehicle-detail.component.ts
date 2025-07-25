@@ -1,37 +1,30 @@
 import { Component, computed, inject, signal, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSliderModule } from '@angular/material/slider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDividerModule } from '@angular/material/divider';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { VehicleService } from '../../services/vehicle';
 import { FinanceCalculatorService } from '../../services/finance-calculator';
 import { Vehicle, FinanceQuote } from '../../models';
 import { switchMap } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
+import { FinanceCalculatorComponent, FinanceTerms } from '../finance-calculator/finance-calculator.component';
+import { FinanceQuoteComponent } from '../finance-quote/finance-quote.component';
 
 @Component({
   selector: 'app-vehicle-detail',
   imports: [
     CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
     MatCardModule,
     MatButtonModule,
     MatIconModule,
-    MatInputModule,
-    MatFormFieldModule,
-    MatSliderModule,
     MatProgressSpinnerModule,
-    MatDividerModule,
-    MatToolbarModule
+    MatToolbarModule,
+    FinanceCalculatorComponent,
+    FinanceQuoteComponent
   ],
   templateUrl: './vehicle-detail.component.html',
   styleUrls: ['./vehicle-detail.component.scss'],
@@ -42,7 +35,6 @@ export class VehicleDetailComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly vehicleService = inject(VehicleService);
   private readonly financeService = inject(FinanceCalculatorService);
-  private readonly fb = inject(FormBuilder);
 
   // Signals for state management
   protected readonly vehicle = signal<Vehicle | null>(null);
@@ -51,26 +43,8 @@ export class VehicleDetailComponent implements OnInit {
   protected readonly financeQuote = signal<FinanceQuote | null>(null);
   protected readonly calculatingFinance = signal(false);
 
-  // Finance form
-  protected readonly financeForm: FormGroup;
-
-  // Computed values
-  protected readonly defaultDeposit = computed(() => {
-    const vehicle = this.vehicle();
-    return vehicle ? Math.round(vehicle.price * 0.1) : 0;
-  });
-
-  protected readonly maxDeposit = computed(() => {
-    const vehicle = this.vehicle();
-    return vehicle ? vehicle.price : 100000;
-  });
-
-  constructor() {
-    this.financeForm = this.fb.group({
-      deposit: [0, [Validators.required, Validators.min(0)]],
-      termInMonths: [60, [Validators.required, Validators.min(12), Validators.max(84)]]
-    });
-  }
+  // Current finance terms
+  private currentTerms: FinanceTerms | null = null;
 
   ngOnInit(): void {
     this.route.params
@@ -88,7 +62,6 @@ export class VehicleDetailComponent implements OnInit {
         next: (vehicle) => {
           if (vehicle) {
             this.vehicle.set(vehicle);
-            this.setupDefaultFinance(vehicle);
             this.loading.set(false);
           } else {
             this.error.set('Vehicle not found');
@@ -103,34 +76,21 @@ export class VehicleDetailComponent implements OnInit {
       });
   }
 
-  private setupDefaultFinance(vehicle: Vehicle): void {
-    const defaultDeposit = this.defaultDeposit();
-    this.financeForm.patchValue({
-      deposit: defaultDeposit,
-      termInMonths: 60
-    });
-    
-    // Set max validator for deposit
-    this.financeForm.get('deposit')?.setValidators([
-      Validators.required,
-      Validators.min(0),
-      Validators.max(vehicle.price)
-    ]);
-    
-    this.calculateFinance();
+  protected onFinanceTermsChanged(terms: FinanceTerms): void {
+    this.currentTerms = terms;
+    this.calculateFinance(terms);
   }
 
-  protected calculateFinance(): void {
+  private calculateFinance(terms: FinanceTerms): void {
     const vehicle = this.vehicle();
-    if (!vehicle || this.financeForm.invalid) return;
+    if (!vehicle) return;
 
     this.calculatingFinance.set(true);
-    const formValue = this.financeForm.value;
 
     this.financeService.calculateFinance(
       vehicle,
-      formValue.termInMonths,
-      formValue.deposit
+      terms.termInMonths,
+      terms.deposit
     ).subscribe({
       next: (quote) => {
         this.financeQuote.set(quote);
@@ -143,20 +103,6 @@ export class VehicleDetailComponent implements OnInit {
     });
   }
 
-  protected onDepositChange(value: number): void {
-    if (value !== this.financeForm.get('deposit')?.value) {
-      this.financeForm.patchValue({ deposit: value });
-      this.calculateFinance();
-    }
-  }
-
-  protected onTermChange(value: number): void {
-    if (value !== this.financeForm.get('termInMonths')?.value) {
-      this.financeForm.patchValue({ termInMonths: value });
-      this.calculateFinance();
-    }
-  }
-
   protected goBack(): void {
     this.router.navigate(['/vehicles']);
   }
@@ -167,14 +113,6 @@ export class VehicleDetailComponent implements OnInit {
       currency: 'GBP',
       minimumFractionDigits: 0
     }).format(price);
-  }
-
-  protected formatMonthlyPayment(payment: number): string {
-    return new Intl.NumberFormat('en-GB', {
-      style: 'currency',
-      currency: 'GBP',
-      minimumFractionDigits: 2
-    }).format(payment);
   }
 
   protected retry(): void {

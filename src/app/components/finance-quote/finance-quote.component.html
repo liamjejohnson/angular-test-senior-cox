@@ -1,0 +1,71 @@
+<mat-card class="quote-card">
+  <mat-card-header>
+    <mat-card-title>
+      <mat-icon>receipt</mat-icon>
+      Finance Quote
+    </mat-card-title>
+  </mat-card-header>
+  
+  <mat-card-content>
+    @if (isCalculating()) {
+      <div class="calculating">
+        <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
+        <span>Calculating...</span>
+      </div>
+    } @else if (financeQuote()) {
+      <div class="quote-details">
+        <div class="quote-item highlight">
+          <span class="quote-label">Monthly Payment</span>
+          <span class="quote-value monthly-payment">
+            {{formatMonthlyPayment(financeQuote()?.monthlyPayment || 0)}}
+          </span>
+        </div>
+        
+        <mat-divider></mat-divider>
+        
+        <div class="quote-breakdown">
+          <div class="quote-item">
+            <span class="quote-label">On the Road Price</span>
+            <span class="quote-value">{{formatPrice(financeQuote()?.onTheRoadPrice || 0)}}</span>
+          </div>
+          
+          <div class="quote-item">
+            <span class="quote-label">Total Deposit</span>
+            <span class="quote-value">{{formatPrice(financeQuote()?.totalDeposit || 0)}}</span>
+          </div>
+          
+          <div class="quote-item">
+            <span class="quote-label">Amount to Finance</span>
+            <span class="quote-value">{{formatPrice(financeQuote()?.totalAmountOfCredit || 0)}}</span>
+          </div>
+          
+          <div class="quote-item">
+            <span class="quote-label">Loan Term</span>
+            <span class="quote-value">{{financeQuote()?.numberOfMonthlyPayments}} months</span>
+          </div>
+        </div>
+        
+        @if ((financeQuote()?.totalAmountOfCredit || 0) > 0) {
+          <div class="total-cost">
+            <strong>
+              Total Cost: {{formatPrice((financeQuote()?.monthlyPayment || 0) * (financeQuote()?.numberOfMonthlyPayments || 0) + (financeQuote()?.totalDeposit || 0))}}
+            </strong>
+          </div>
+        }
+      </div>
+    }
+  </mat-card-content>
+  
+  @if (financeQuote() && (financeQuote()?.totalAmountOfCredit || 0) > 0) {
+    <mat-card-actions>
+      <button mat-raised-button color="primary">
+        <mat-icon>check_circle</mat-icon>
+        Apply for Finance
+      </button>
+      <button mat-button>
+        <mat-icon>phone</mat-icon>
+        Contact Dealer
+      </button>
+    </mat-card-actions>
+  }
+</mat-card> 

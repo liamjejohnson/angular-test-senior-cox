@@ -1,0 +1,100 @@
+.finance-card {
+  mat-card-header {
+    mat-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      mat-icon {
+        color: #ff9800;
+      }
+    }
+
+    .finance-subtitle {
+      margin-bottom: 20px;
+    }
+  }
+
+  .finance-form {
+    .form-section {
+      margin-bottom: 32px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .deposit-field,
+      .term-field {
+        width: 100%;
+        margin-bottom: 16px;
+      }
+
+      .deposit-slider,
+      .term-slider {
+        width: 100%;
+        margin-bottom: 24px;
+
+        // Hide the slider value indicators (pins) completely
+        ::ng-deep .mdc-slider__value-indicator-container {
+          display: none !important;
+        }
+        
+        ::ng-deep .mdc-slider__value-indicator {
+          display: none !important;
+        }
+        
+        ::ng-deep .mdc-slider__value-indicator-text {
+          display: none !important;
+        }
+      }
+
+      .slider-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.875rem;
+        color: #666;
+        margin-bottom: 8px;
+      }
+
+      .slider-percentage-marks,
+      .slider-year-marks {
+        position: relative;
+        height: 20px;
+        margin-bottom: 8px;
+
+        .percentage-mark,
+        .year-mark {
+          position: absolute;
+          font-size: 0.75rem;
+          color: #999;
+          transform: translateX(-50%);
+          white-space: nowrap;
+          
+          &::before {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            width: 1px;
+            height: 8px;
+            background-color: #ddd;
+            transform: translateX(-50%);
+          }
+        }
+      }
+    }
+
+    mat-divider {
+      margin: 24px 0;
+    }
+  }
+
+  // Responsive design
+  @media (max-width: 480px) {
+    .finance-form {
+      .form-section {
+        margin-bottom: 24px;
+      }
+    }
+  }
+} 

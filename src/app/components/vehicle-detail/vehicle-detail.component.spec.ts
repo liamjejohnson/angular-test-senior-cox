@@ -1,12 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder } from '@angular/forms';
 import { of, throwError } from 'rxjs';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { VehicleDetailComponent } from './vehicle-detail.component';
 import { VehicleService } from '../../services/vehicle';
 import { FinanceCalculatorService } from '../../services/finance-calculator';
 import { Vehicle, FinanceQuote } from '../../models';
+import { FinanceTerms } from '../finance-calculator/finance-calculator.component';
 
 describe('VehicleDetailComponent', () => {
   let component: VehicleDetailComponent;
@@ -44,9 +43,8 @@ describe('VehicleDetailComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [VehicleDetailComponent, NoopAnimationsModule],
+      imports: [VehicleDetailComponent],
       providers: [
-        FormBuilder,
         { provide: VehicleService, useValue: vehicleServiceSpy },
         { provide: FinanceCalculatorService, useValue: financeServiceSpy },
         { provide: Router, useValue: routerSpy },
@@ -72,7 +70,7 @@ describe('VehicleDetailComponent', () => {
         expect(component).toBeTruthy();
       });
 
-      it('Then should load vehicle and setup default finance', () => {
+      it('Then should load vehicle successfully', () => {
         // Act
         component.ngOnInit();
         fixture.detectChanges();
@@ -82,17 +80,6 @@ describe('VehicleDetailComponent', () => {
         expect(component['vehicle']()).toEqual(mockVehicle);
         expect(component['loading']()).toBeFalse();
         expect(component['error']()).toBeNull();
-        expect(mockFinanceService.calculateFinance).toHaveBeenCalled();
-      });
-
-      it('Then should calculate default deposit as 10% of vehicle price', () => {
-        // Act
-        component.ngOnInit();
-        fixture.detectChanges();
-
-        // Assert
-        const expectedDeposit = Math.round(mockVehicle.price * 0.1);
-        expect(component['defaultDeposit']()).toBe(expectedDeposit);
       });
     });
 
@@ -142,28 +129,35 @@ describe('VehicleDetailComponent', () => {
         expect(mockRouter.navigate).toHaveBeenCalledWith(['/vehicles']);
       });
 
-      it('Then should recalculate finance when deposit changes', () => {
+      it('Then should handle finance terms changes', () => {
         // Arrange
+        const mockTerms: FinanceTerms = {
+          deposit: 5000,
+          termInMonths: 48
+        };
         mockFinanceService.calculateFinance.calls.reset();
 
         // Act
-        component['onDepositChange'](5000);
+        component['onFinanceTermsChanged'](mockTerms);
 
         // Assert
-        expect(component['financeForm'].get('deposit')?.value).toBe(5000);
-        expect(mockFinanceService.calculateFinance).toHaveBeenCalledWith(mockVehicle, 60, 5000);
+        expect(mockFinanceService.calculateFinance).toHaveBeenCalledWith(mockVehicle, 48, 5000);
+        expect(component['calculatingFinance']()).toBeTrue();
       });
 
-      it('Then should recalculate finance when term changes', () => {
+      it('Then should update finance quote when calculation completes', () => {
         // Arrange
-        mockFinanceService.calculateFinance.calls.reset();
+        const mockTerms: FinanceTerms = {
+          deposit: 5000,
+          termInMonths: 48
+        };
 
         // Act
-        component['onTermChange'](48);
+        component['onFinanceTermsChanged'](mockTerms);
 
         // Assert
-        expect(component['financeForm'].get('termInMonths')?.value).toBe(48);
-        expect(mockFinanceService.calculateFinance).toHaveBeenCalledWith(mockVehicle, 48, jasmine.any(Number));
+        expect(component['financeQuote']()).toEqual(mockFinanceQuote);
+        expect(component['calculatingFinance']()).toBeFalse();
       });
     });
   });
