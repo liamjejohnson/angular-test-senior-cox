@@ -1,0 +1,237 @@
+<div class="vehicle-detail-container">
+  <!-- Header with back navigation -->
+  <mat-toolbar class="detail-header">
+    <button mat-icon-button (click)="goBack()" aria-label="Go back">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <span>Vehicle Details</span>
+    <span class="spacer"></span>
+  </mat-toolbar>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-progress-spinner mode="indeterminate" diameter="60"></mat-progress-spinner>
+      <p>Loading vehicle details...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+    <div class="error-container">
+      <mat-icon color="warn">error_outline</mat-icon>
+      <h3>{{error()}}</h3>
+      <button mat-raised-button color="primary" (click)="retry()">
+        <mat-icon>refresh</mat-icon>
+        Try Again
+      </button>
+      <button mat-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        Go Back
+      </button>
+    </div>
+  }
+
+  <!-- Vehicle Details Content -->
+  @if (!loading() && !error() && vehicle()) {
+    <div class="content">
+      <!-- Vehicle Information Card -->
+      <mat-card class="vehicle-info-card">
+        <mat-card-header>
+          <mat-card-title>{{vehicle()?.year}} {{vehicle()?.make}} {{vehicle()?.model}}</mat-card-title>
+          <mat-card-subtitle>{{vehicle()?.colour}}</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="vehicle-specs">
+                         <div class="spec-item">
+               <mat-icon>currency_pound</mat-icon>
+               <div class="spec-content">
+                 <span class="spec-label">Price</span>
+                 <span class="spec-value price">{{formatPrice(vehicle()?.price || 0)}}</span>
+               </div>
+             </div>
+            
+            <div class="spec-item">
+              <mat-icon>speed</mat-icon>
+              <div class="spec-content">
+                <span class="spec-label">Mileage</span>
+                <span class="spec-value">{{vehicle()?.mileage | number}} miles</span>
+              </div>
+            </div>
+            
+            <div class="spec-item">
+              <mat-icon>calendar_today</mat-icon>
+              <div class="spec-content">
+                <span class="spec-label">Year</span>
+                <span class="spec-value">{{vehicle()?.year}}</span>
+              </div>
+            </div>
+            
+            <div class="spec-item">
+              <mat-icon>palette</mat-icon>
+              <div class="spec-content">
+                <span class="spec-label">Color</span>
+                <span class="spec-value">{{vehicle()?.colour}}</span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Finance Calculator Card -->
+      <mat-card class="finance-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>calculate</mat-icon>
+            Finance Calculator
+          </mat-card-title>
+          <mat-card-subtitle class="finance-subtitle">Customize your loan terms</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <form [formGroup]="financeForm" class="finance-form">
+            <!-- Deposit Slider -->
+            <div class="form-section">
+              <mat-form-field appearance="outline" class="deposit-field">
+                <mat-label>Deposit Amount</mat-label>
+                <input 
+                  matInput 
+                  type="number" 
+                  formControlName="deposit"
+                  [max]="maxDeposit()"
+                  min="0"
+                  (change)="calculateFinance()">
+                                 <span matTextPrefix>£</span>
+              </mat-form-field>
+              
+                             <mat-slider 
+                 class="deposit-slider"
+                 [min]="0" 
+                 [max]="maxDeposit()" 
+                 [step]="500"
+                 discrete
+                 showTickMarks>
+                 <input matSliderThumb 
+                        [value]="financeForm.get('deposit')?.value || 0"
+                        (valueChange)="onDepositChange($event)">
+               </mat-slider>
+              
+              <div class="slider-labels">
+                                 <span>£0</span>
+                <span>{{formatPrice(maxDeposit())}}</span>
+              </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <!-- Term Slider -->
+            <div class="form-section">
+              <mat-form-field appearance="outline" class="term-field">
+                <mat-label>Loan Term (Months)</mat-label>
+                <input 
+                  matInput 
+                  type="number" 
+                  formControlName="termInMonths"
+                  min="12"
+                  max="84"
+                  (change)="calculateFinance()">
+                <span matTextSuffix>months</span>
+              </mat-form-field>
+              
+                             <mat-slider 
+                 class="term-slider"
+                 [min]="12" 
+                 [max]="84" 
+                 [step]="6"
+                 discrete
+                 showTickMarks>
+                 <input matSliderThumb 
+                        [value]="financeForm.get('termInMonths')?.value || 60"
+                        (valueChange)="onTermChange($event)">
+               </mat-slider>
+              
+              <div class="slider-labels">
+                <span>1 year</span>
+                <span>7 years</span>
+              </div>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Finance Quote Card -->
+      <mat-card class="quote-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>receipt</mat-icon>
+            Finance Quote
+          </mat-card-title>
+        </mat-card-header>
+        
+        <mat-card-content>
+          @if (calculatingFinance()) {
+            <div class="calculating">
+              <mat-progress-spinner mode="indeterminate" diameter="40"></mat-progress-spinner>
+              <span>Calculating...</span>
+            </div>
+          } @else if (financeQuote()) {
+            <div class="quote-details">
+              <div class="quote-item highlight">
+                <span class="quote-label">Monthly Payment</span>
+                <span class="quote-value monthly-payment">
+                  {{formatMonthlyPayment(financeQuote()?.monthlyPayment || 0)}}
+                </span>
+              </div>
+              
+              <mat-divider></mat-divider>
+              
+              <div class="quote-breakdown">
+                <div class="quote-item">
+                  <span class="quote-label">On the Road Price</span>
+                  <span class="quote-value">{{formatPrice(financeQuote()?.onTheRoadPrice || 0)}}</span>
+                </div>
+                
+                <div class="quote-item">
+                  <span class="quote-label">Total Deposit</span>
+                  <span class="quote-value">{{formatPrice(financeQuote()?.totalDeposit || 0)}}</span>
+                </div>
+                
+                <div class="quote-item">
+                  <span class="quote-label">Amount to Finance</span>
+                  <span class="quote-value">{{formatPrice(financeQuote()?.totalAmountOfCredit || 0)}}</span>
+                </div>
+                
+                <div class="quote-item">
+                  <span class="quote-label">Loan Term</span>
+                  <span class="quote-value">{{financeQuote()?.numberOfMonthlyPayments}} months</span>
+                </div>
+              </div>
+              
+              @if ((financeQuote()?.totalAmountOfCredit || 0) > 0) {
+                <div class="total-cost">
+                  <strong>
+                    Total Cost: {{formatPrice((financeQuote()?.monthlyPayment || 0) * (financeQuote()?.numberOfMonthlyPayments || 0) + (financeQuote()?.totalDeposit || 0))}}
+                  </strong>
+                </div>
+              }
+            </div>
+          }
+        </mat-card-content>
+        
+        @if (financeQuote() && (financeQuote()?.totalAmountOfCredit || 0) > 0) {
+          <mat-card-actions>
+            <button mat-raised-button color="primary">
+              <mat-icon>check_circle</mat-icon>
+              Apply for Finance
+            </button>
+            <button mat-button>
+              <mat-icon>phone</mat-icon>
+              Contact Dealer
+            </button>
+          </mat-card-actions>
+        }
+      </mat-card>
+    </div>
+  }
+</div> 

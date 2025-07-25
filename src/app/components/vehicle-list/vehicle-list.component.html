@@ -1,0 +1,118 @@
+<div class="vehicle-list-container">
+  <div class="header">
+    <h1>Vehicle Inventory</h1>
+    <p class="subtitle">Find your perfect vehicle from our available inventory</p>
+  </div>
+
+  <!-- Search and Filter Controls -->
+  <div class="controls-section">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search vehicles...</mat-label>
+      <input 
+        matInput 
+        [value]="searchTerm()"
+        (input)="onSearchChange($event)"
+        placeholder="Search by make, model, color, or year">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="sort-field">
+      <mat-label>Sort by</mat-label>
+      <mat-select [value]="sortField()" (selectionChange)="onSortChange($event.value)">
+        @for (option of sortOptions; track option.value) {
+          <mat-option [value]="option.value">{{option.label}}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <button 
+      mat-icon-button 
+      (click)="onSortChange(sortField())"
+      [attr.aria-label]="'Sort ' + sortDirection()"
+      class="sort-direction-btn">
+      <mat-icon>
+        @if (sortDirection() === 'asc') {
+          arrow_upward
+        } @else {
+          arrow_downward
+        }
+      </mat-icon>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-container">
+      <mat-progress-spinner mode="indeterminate" diameter="60"></mat-progress-spinner>
+      <p>Loading vehicles...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+    <div class="error-container">
+      <mat-icon color="warn">error_outline</mat-icon>
+      <h3>{{error()}}</h3>
+      <button mat-raised-button color="primary" (click)="retry()">
+        <mat-icon>refresh</mat-icon>
+        Try Again
+      </button>
+    </div>
+  }
+
+  <!-- Results Info -->
+  @if (!loading() && !error()) {
+    <div class="results-info">
+      <mat-chip-set>
+        <mat-chip>{{filteredVehicles().length}} vehicles found</mat-chip>
+        @if (searchTerm()) {
+          <mat-chip>Filtered by: "{{searchTerm()}}"</mat-chip>
+        }
+      </mat-chip-set>
+    </div>
+  }
+
+  <!-- Vehicle Grid -->
+  @if (!loading() && !error()) {
+    <div class="vehicle-grid">
+      @for (vehicle of filteredVehicles(); track vehicle.id) {
+        <mat-card class="vehicle-card" (click)="viewVehicleDetails(vehicle.id)">
+          <mat-card-header>
+            <mat-card-title>{{vehicle.year}} {{vehicle.make}} {{vehicle.model}}</mat-card-title>
+            <mat-card-subtitle>{{vehicle.colour}}</mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <div class="vehicle-details">
+              <div class="detail-item">
+                <mat-icon>currency_pound</mat-icon>
+                <span class="price">{{formatPrice(vehicle.price)}}</span>
+              </div>
+              <div class="detail-item">
+                <mat-icon>speed</mat-icon>
+                <span>{{vehicle.mileage | number}} miles</span>
+              </div>
+            </div>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button mat-button color="primary">
+              <mat-icon>visibility</mat-icon>
+              View Details
+            </button>
+            <button mat-button>
+              <mat-icon>calculate</mat-icon>
+              Finance
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      } @empty {
+        <div class="no-results">
+          <mat-icon>search_off</mat-icon>
+          <h3>No vehicles found</h3>
+          <p>Try adjusting your search terms or filters</p>
+        </div>
+      }
+    </div>
+  }
+</div> 
