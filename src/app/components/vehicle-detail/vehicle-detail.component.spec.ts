@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, throwError, timer } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { VehicleDetailComponent } from './vehicle-detail.component';
 import { VehicleService } from '../../services/vehicle';
 import { FinanceCalculatorService } from '../../services/finance-calculator';
@@ -136,6 +137,10 @@ describe('VehicleDetailComponent', () => {
           termInMonths: 48
         };
         mockFinanceService.calculateFinance.calls.reset();
+        // Use a delayed observable to test the loading state
+        mockFinanceService.calculateFinance.and.returnValue(
+          timer(100).pipe(map(() => mockFinanceQuote))
+        );
 
         // Act
         component['onFinanceTermsChanged'](mockTerms);
