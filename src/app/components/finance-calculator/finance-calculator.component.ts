@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSliderModule } from '@angular/material/slider';
 import { MatDividerModule } from '@angular/material/divider';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Vehicle } from '../../models';
 
 export interface FinanceTerms {
@@ -91,12 +92,14 @@ export class FinanceCalculatorComponent implements OnInit {
     // Emit initial values
     this.emitTerms();
 
-    // Subscribe to form changes
-    this.financeForm.valueChanges.subscribe(() => {
-      if (this.financeForm.valid) {
-        this.emitTerms();
-      }
-    });
+    // Subscribe to form changes with proper cleanup
+    this.financeForm.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        if (this.financeForm.valid) {
+          this.emitTerms();
+        }
+      });
   }
 
   private emitTerms(): void {

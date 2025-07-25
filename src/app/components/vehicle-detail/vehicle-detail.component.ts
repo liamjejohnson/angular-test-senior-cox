@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { VehicleService } from '../../services/vehicle';
 import { FinanceCalculatorService } from '../../services/finance-calculator';
 import { Vehicle, FinanceQuote } from '../../models';
@@ -56,7 +57,8 @@ export class VehicleDetailComponent implements OnInit {
             return EMPTY;
           }
           return this.vehicleService.getVehicleById(vehicleId);
-        })
+        }),
+        takeUntilDestroyed()
       )
       .subscribe({
         next: (vehicle) => {
@@ -91,7 +93,9 @@ export class VehicleDetailComponent implements OnInit {
       vehicle,
       terms.termInMonths,
       terms.deposit
-    ).subscribe({
+    )
+    .pipe(takeUntilDestroyed())
+    .subscribe({
       next: (quote) => {
         this.financeQuote.set(quote);
         this.calculatingFinance.set(false);

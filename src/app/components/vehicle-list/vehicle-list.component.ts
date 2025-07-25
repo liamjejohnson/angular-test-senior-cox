@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, inject, signal, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -10,6 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { VehicleService } from '../../services/vehicle';
 import { Vehicle } from '../../models';
 
@@ -31,7 +32,7 @@ import { Vehicle } from '../../models';
   styleUrls: ['./vehicle-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class VehicleListComponent {
+export class VehicleListComponent implements OnInit {
   private readonly vehicleService = inject(VehicleService);
   private readonly router = inject(Router);
 
@@ -93,17 +94,19 @@ export class VehicleListComponent {
     this.loading.set(true);
     this.error.set(null);
     
-    this.vehicleService.getVehicles().subscribe({
-      next: (vehicles) => {
-        this.vehicles.set(vehicles);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.error.set('Failed to load vehicles. Please try again.');
-        this.loading.set(false);
-        console.error('Error loading vehicles:', err);
-      }
-    });
+    this.vehicleService.getVehicles()
+      .pipe(takeUntilDestroyed())
+      .subscribe({
+        next: (vehicles) => {
+          this.vehicles.set(vehicles);
+          this.loading.set(false);
+        },
+        error: (err) => {
+          this.error.set('Failed to load vehicles. Please try again.');
+          this.loading.set(false);
+          console.error('Error loading vehicles:', err);
+        }
+      });
   }
 
   protected onSearchChange(event: Event): void {
