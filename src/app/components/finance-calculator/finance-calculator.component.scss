@@ -1,4 +1,14 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
 .finance-card {
+  width: 100%;
+  background-color: white !important;
+  
   mat-card-header {
     mat-card-title {
       display: flex;
@@ -32,55 +42,6 @@
       .deposit-slider,
       .term-slider {
         width: 100%;
-        margin-bottom: 24px;
-
-        // Hide the slider value indicators (pins) completely
-        ::ng-deep .mdc-slider__value-indicator-container {
-          display: none !important;
-        }
-        
-        ::ng-deep .mdc-slider__value-indicator {
-          display: none !important;
-        }
-        
-        ::ng-deep .mdc-slider__value-indicator-text {
-          display: none !important;
-        }
-      }
-
-      .slider-labels {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.875rem;
-        color: #666;
-        margin-bottom: 8px;
-      }
-
-      .slider-percentage-marks,
-      .slider-year-marks {
-        position: relative;
-        height: 20px;
-        margin-bottom: 8px;
-
-        .percentage-mark,
-        .year-mark {
-          position: absolute;
-          font-size: 0.75rem;
-          color: #999;
-          transform: translateX(-50%);
-          white-space: nowrap;
-          
-          &::before {
-            content: '';
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            width: 1px;
-            height: 8px;
-            background-color: #ddd;
-            transform: translateX(-50%);
-          }
-        }
       }
     }
 
@@ -90,10 +51,60 @@
   }
 
   // Responsive design
-  @media (max-width: 480px) {
+  @media (max-width: 768px) {
+    padding: 12px;
+    
+    mat-card-header {
+      padding-bottom: 8px;
+      
+      mat-card-title {
+        font-size: 1.25rem;
+        
+        mat-icon {
+          font-size: 1.25rem;
+          width: 1.25rem;
+          height: 1.25rem;
+        }
+      }
+      
+      .finance-subtitle {
+        font-size: 0.875rem;
+        margin-bottom: 12px;
+      }
+    }
+
     .finance-form {
       .form-section {
-        margin-bottom: 24px;
+        margin-bottom: 20px;
+
+        .deposit-field,
+        .term-field {
+          margin-bottom: 12px;
+        }
+      }
+
+      mat-divider {
+        margin: 16px 0;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px;
+    
+    mat-card-header {
+      mat-card-title {
+        font-size: 1.125rem;
+      }
+      
+      .finance-subtitle {
+        font-size: 0.8rem;
+      }
+    }
+
+    .finance-form {
+      .form-section {
+        margin-bottom: 16px;
       }
     }
   }

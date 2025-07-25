@@ -27,24 +27,11 @@
           [min]="0" 
           [max]="maxDeposit()" 
           [step]="500"
-          discrete
-          showTickMarks>
+          discrete>
           <input matSliderThumb 
                  [value]="financeForm.get('deposit')?.value || 0"
                  (valueChange)="onDepositChange($event)">
         </mat-slider>
-        
-        <div class="slider-labels">
-          <span>£0 (0%)</span>
-          <span>{{formatPrice(maxDeposit())}} (100%)</span>
-        </div>
-        
-        <div class="slider-percentage-marks">
-          <span class="percentage-mark" [style.left.%]="10">10%</span>
-          <span class="percentage-mark" [style.left.%]="25">25%</span>
-          <span class="percentage-mark" [style.left.%]="50">50%</span>
-          <span class="percentage-mark" [style.left.%]="75">75%</span>
-        </div>
       </div>
 
       <mat-divider></mat-divider>
@@ -67,25 +54,11 @@
           [min]="12" 
           [max]="84" 
           [step]="6"
-          discrete
-          showTickMarks>
+          discrete>
           <input matSliderThumb 
                  [value]="financeForm.get('termInMonths')?.value || 60"
                  (valueChange)="onTermChange($event)">
         </mat-slider>
-        
-        <div class="slider-labels">
-          <span>1 year</span>
-          <span>7 years</span>
-        </div>
-        
-        <div class="slider-year-marks">
-          <span class="year-mark" [style.left.%]="16.67">2 years</span>
-          <span class="year-mark" [style.left.%]="33.33">3 years</span>
-          <span class="year-mark" [style.left.%]="50">4 years</span>
-          <span class="year-mark" [style.left.%]="66.67">5 years</span>
-          <span class="year-mark" [style.left.%]="83.33">6 years</span>
-        </div>
       </div>
     </form>
   </mat-card-content>

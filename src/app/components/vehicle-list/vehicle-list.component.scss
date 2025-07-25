@@ -24,7 +24,7 @@
   .controls-section {
     display: flex;
     gap: 16px;
-    align-items: flex-end;
+    align-items: center;
     margin-bottom: 24px;
     flex-wrap: wrap;
 
@@ -90,6 +90,7 @@
       cursor: pointer;
       transition: all 0.3s ease;
       border-radius: 12px;
+      background-color: white !important;
 
       &:hover {
         transform: translateY(-4px);

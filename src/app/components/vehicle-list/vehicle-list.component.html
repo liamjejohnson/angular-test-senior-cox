@@ -26,7 +26,7 @@
     </mat-form-field>
 
     <button 
-      mat-icon-button 
+      mat-button 
       (click)="onSortChange(sortField())"
       [attr.aria-label]="'Sort ' + sortDirection()"
       class="sort-direction-btn">
@@ -37,6 +37,11 @@
           arrow_downward
         }
       </mat-icon>
+      @if (sortDirection() === 'asc') {
+        Ascending
+      } @else {
+        Descending
+      }
     </button>
   </div>
 

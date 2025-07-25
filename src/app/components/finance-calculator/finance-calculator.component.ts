@@ -127,5 +127,4 @@ export class FinanceCalculatorComponent implements OnInit {
     }).format(price);
   }
 
-
 } 
